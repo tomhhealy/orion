@@ -8,4 +8,5 @@ export interface DesktopRuntimeInfo {
 export interface DesktopBridge {
 	isDesktop(): true;
 	getRuntimeInfo(): DesktopRuntimeInfo;
+	startExternalSignIn(): Promise<void>;
 }

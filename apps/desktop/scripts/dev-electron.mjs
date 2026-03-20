@@ -3,9 +3,12 @@ import { spawn } from 'node:child_process';
 import waitOn from 'wait-on';
 
 const ORION_WEB_DEV_PORT = 3000;
+const ORION_WEB_DEV_HOST = 'localhost';
 
 const bunCommand = process.platform === 'win32' ? 'bun.exe' : 'bun';
-const devServerUrl = process.env.VITE_DEV_SERVER_URL ?? `http://127.0.0.1:${ORION_WEB_DEV_PORT}`;
+// Match the browser dev origin so Better Auth cookies and local session state line up.
+const devServerUrl =
+  process.env.VITE_DEV_SERVER_URL ?? `http://${ORION_WEB_DEV_HOST}:${ORION_WEB_DEV_PORT}`;
 
 await waitOn({
   resources: [`tcp:${ORION_WEB_DEV_PORT}`],

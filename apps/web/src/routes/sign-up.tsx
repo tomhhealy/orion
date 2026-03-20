@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import AuthShell from '../components/AuthShell'
+import { getAuthCallbackUrl } from '../lib/desktop-auth'
 import { authClient } from '../lib/auth-client'
 import { formatAuthError } from '../lib/auth-errors'
 
@@ -14,6 +15,7 @@ function SignUpPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const { data: session, isPending } = authClient.useSession()
+  const callbackURL = getAuthCallbackUrl()
 
   useEffect(() => {
     if (session?.session) {
@@ -35,11 +37,11 @@ function SignUpPage() {
         name,
         email,
         password,
-        callbackURL: '/',
+        callbackURL,
       },
       {
         onSuccess: () => {
-          window.location.assign('/')
+          window.location.assign(callbackURL)
         },
         onError: (ctx) => {
           setErrorMessage(formatAuthError(ctx.error))

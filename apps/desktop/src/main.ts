@@ -1,7 +1,8 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
-import { createServer } from 'node:net';
+import { createServer as createHttpServer, type Server as HttpServer } from 'node:http';
+import { createServer as createNetServer } from 'node:net';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 
@@ -14,6 +15,12 @@ let mainWindow: BrowserWindow | null = null;
 let localWebServerProcess: ChildProcess | null = null;
 let localWebServerUrl: string | null = null;
 let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+let desktopAuthCallbackServer: HttpServer | null = null;
+const externalDevServerUrl = process.env.VITE_DEV_SERVER_URL;
+
+function getDesktopAppUrl() {
+  return externalDevServerUrl ?? MAIN_WINDOW_VITE_DEV_SERVER_URL ?? null;
+}
 
 function resolvePackagedResource(...segments: string[]): string {
   return path.join(process.resourcesPath, ...segments);
@@ -55,7 +62,7 @@ function resolveWebLauncherScript(): string {
 
 async function getAvailablePort(): Promise<number> {
   return await new Promise((resolve, reject) => {
-    const server = createServer();
+    const server = createNetServer();
 
     server.once('error', reject);
     server.listen(0, '127.0.0.1', () => {
@@ -151,8 +158,105 @@ function stopLocalWebServer() {
   localWebServerUrl = null;
 }
 
+async function closeDesktopAuthCallbackServer() {
+  if (!desktopAuthCallbackServer) {
+    return;
+  }
+
+  const server = desktopAuthCallbackServer;
+  desktopAuthCallbackServer = null;
+
+  await new Promise<void>((resolve, reject) => {
+    server.close((error) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve();
+    });
+  });
+}
+
+async function getOrCreateDesktopAppUrl() {
+  const appUrl = getDesktopAppUrl();
+
+  if (appUrl) {
+    return appUrl;
+  }
+
+  return await ensureLocalWebServer();
+}
+
+async function handleDesktopAuthToken(token: string) {
+  const appUrl = await getOrCreateDesktopAppUrl();
+  const callbackUrl = new URL('/desktop-auth/callback', appUrl);
+  callbackUrl.searchParams.set('token', token);
+
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    void mainWindow.loadURL(callbackUrl.toString());
+    mainWindow.focus();
+  }
+}
+
+async function startExternalDesktopSignIn() {
+  await closeDesktopAuthCallbackServer();
+
+  const port = await getAvailablePort();
+  const callbackHost = '127.0.0.1';
+  const callbackUrl = new URL(`http://${callbackHost}:${String(port)}/callback`);
+
+  desktopAuthCallbackServer = createHttpServer((request, response) => {
+    const requestUrl = new URL(request.url ?? '/', callbackUrl);
+
+    if (requestUrl.pathname !== '/callback') {
+      response.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+      response.end('Not found');
+      return;
+    }
+
+    const token = requestUrl.searchParams.get('token');
+
+    if (!token) {
+      response.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+      response.end('Missing token');
+      return;
+    }
+
+    response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    response.end(
+      '<!doctype html><html><body style="font-family: sans-serif; padding: 24px;"><h1>Orion sign-in complete</h1><p>You can return to the desktop app.</p></body></html>',
+    );
+
+    // Hand off the token immediately. Waiting for server.close() can stall on
+    // keep-alive connections from the browser and delay the desktop redirect.
+    void handleDesktopAuthToken(token).catch((error) => {
+      console.error('Failed to hand off desktop auth token', error);
+    });
+
+    void closeDesktopAuthCallbackServer().catch((error) => {
+      console.error('Failed to close desktop auth callback server', error);
+    });
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    desktopAuthCallbackServer?.once('error', reject);
+    desktopAuthCallbackServer?.listen(port, callbackHost, () => {
+      resolve();
+    });
+  });
+
+  const appUrl = await getOrCreateDesktopAppUrl();
+  const externalAuthUrl = new URL('/desktop-auth/start', appUrl);
+  externalAuthUrl.searchParams.set('redirect_uri', callbackUrl.toString());
+
+  await shell.openExternal(externalAuthUrl.toString());
+}
+
 function scheduleReload(window: BrowserWindow) {
-  if (!MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+  const appUrl = getDesktopAppUrl();
+
+  if (!appUrl) {
     return;
   }
 
@@ -162,7 +266,7 @@ function scheduleReload(window: BrowserWindow) {
 
   reloadTimer = setTimeout(() => {
     reloadTimer = null;
-    void window.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+    void window.loadURL(appUrl);
   }, 1000);
 }
 
@@ -180,14 +284,16 @@ const createWindow = async () => {
     },
   });
 
-  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
-    void mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
-  } else {
-    const appUrl = await ensureLocalWebServer();
+  const appUrl = getDesktopAppUrl();
+
+  if (appUrl) {
     void mainWindow.loadURL(appUrl);
+  } else {
+    const packagedAppUrl = await ensureLocalWebServer();
+    void mainWindow.loadURL(packagedAppUrl);
   }
 
-  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+  if (appUrl) {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
     mainWindow.webContents.on('did-fail-load', () => {
       if (mainWindow) {
@@ -202,6 +308,9 @@ app.on('ready', () => {
 });
 
 app.on('before-quit', () => {
+  void closeDesktopAuthCallbackServer().catch((error) => {
+    console.error('Failed to close desktop auth callback server', error);
+  });
   stopLocalWebServer();
 });
 
@@ -215,4 +324,8 @@ app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow();
   }
+});
+
+ipcMain.handle('desktop-auth:start-sign-in', async () => {
+  await startExternalDesktopSignIn();
 });

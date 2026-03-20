@@ -13,6 +13,8 @@ import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DesktopAuthStartRouteImport } from './routes/desktop-auth.start'
+import { Route as DesktopAuthCallbackRouteImport } from './routes/desktop-auth.callback'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const SignUpRoute = SignUpRouteImport.update({
@@ -35,6 +37,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DesktopAuthStartRoute = DesktopAuthStartRouteImport.update({
+  id: '/desktop-auth/start',
+  path: '/desktop-auth/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesktopAuthCallbackRoute = DesktopAuthCallbackRouteImport.update({
+  id: '/desktop-auth/callback',
+  path: '/desktop-auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -46,6 +58,8 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
+  '/desktop-auth/callback': typeof DesktopAuthCallbackRoute
+  '/desktop-auth/start': typeof DesktopAuthStartRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +67,8 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
+  '/desktop-auth/callback': typeof DesktopAuthCallbackRoute
+  '/desktop-auth/start': typeof DesktopAuthStartRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
@@ -61,14 +77,38 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
+  '/desktop-auth/callback': typeof DesktopAuthCallbackRoute
+  '/desktop-auth/start': typeof DesktopAuthStartRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/sign-in' | '/sign-up' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/sign-in'
+    | '/sign-up'
+    | '/desktop-auth/callback'
+    | '/desktop-auth/start'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/sign-in' | '/sign-up' | '/api/auth/$'
-  id: '__root__' | '/' | '/about' | '/sign-in' | '/sign-up' | '/api/auth/$'
+  to:
+    | '/'
+    | '/about'
+    | '/sign-in'
+    | '/sign-up'
+    | '/desktop-auth/callback'
+    | '/desktop-auth/start'
+    | '/api/auth/$'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/sign-in'
+    | '/sign-up'
+    | '/desktop-auth/callback'
+    | '/desktop-auth/start'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -76,6 +116,8 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
+  DesktopAuthCallbackRoute: typeof DesktopAuthCallbackRoute
+  DesktopAuthStartRoute: typeof DesktopAuthStartRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -109,6 +151,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/desktop-auth/start': {
+      id: '/desktop-auth/start'
+      path: '/desktop-auth/start'
+      fullPath: '/desktop-auth/start'
+      preLoaderRoute: typeof DesktopAuthStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/desktop-auth/callback': {
+      id: '/desktop-auth/callback'
+      path: '/desktop-auth/callback'
+      fullPath: '/desktop-auth/callback'
+      preLoaderRoute: typeof DesktopAuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -124,6 +180,8 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
+  DesktopAuthCallbackRoute: DesktopAuthCallbackRoute,
+  DesktopAuthStartRoute: DesktopAuthStartRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

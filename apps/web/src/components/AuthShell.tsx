@@ -4,9 +4,9 @@ interface AuthShellProps {
   title: string
   eyebrow: string
   subtitle: string
-  alternateLabel: string
-  alternateHref: '/sign-in' | '/sign-up'
-  alternateCta: string
+  alternateLabel?: string
+  alternateHref?: '/sign-in' | '/sign-up'
+  alternateCta?: string
   children: React.ReactNode
 }
 
@@ -47,12 +47,14 @@ export default function AuthShell({
 
         <div className="island-shell rounded-[2rem] p-6 sm:p-8">
           {children}
-          <p className="mt-6 text-sm text-[var(--sea-ink-soft)]">
-            {alternateLabel}{' '}
-            <Link to={alternateHref} className="font-semibold text-[var(--lagoon-deep)]">
-              {alternateCta}
-            </Link>
-          </p>
+          {alternateLabel && alternateHref && alternateCta ? (
+            <p className="mt-6 text-sm text-[var(--sea-ink-soft)]">
+              {alternateLabel}{' '}
+              <Link to={alternateHref} className="font-semibold text-[var(--lagoon-deep)]">
+                {alternateCta}
+              </Link>
+            </p>
+          ) : null}
         </div>
       </section>
     </main>
