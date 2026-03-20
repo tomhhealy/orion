@@ -1,0 +1,41 @@
+{
+  "name": "@tomhhealy/desktop",
+  "productName": "Orion",
+  "version": "1.0.0",
+  "description": "Orion desktop shell",
+  "main": ".vite/build/main.js",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev-electron.mjs",
+    "start": "bun run --cwd ../web build && electron-forge start",
+    "build": "bun run --cwd ../web build && electron-forge package",
+    "package": "bun run --cwd ../web build && electron-forge package",
+    "make": "bun run --cwd ../web build && electron-forge make",
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "keywords": [],
+  "dependencies": {
+    "@tomhhealy/contracts": "workspace:*",
+    "@tomhhealy/shared": "workspace:*",
+    "electron-squirrel-startup": "^1.0.1"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.11.1",
+    "@electron-forge/maker-deb": "^7.11.1",
+    "@electron-forge/maker-rpm": "^7.11.1",
+    "@electron-forge/maker-squirrel": "^7.11.1",
+    "@electron-forge/maker-zip": "^7.11.1",
+    "@electron-forge/plugin-fuses": "^7.11.1",
+    "@electron-forge/plugin-vite": "^7.11.1",
+    "@electron-forge/shared-types": "^7.11.1",
+    "@electron/fuses": "^1.8.0",
+    "@types/electron-squirrel-startup": "^1.0.2",
+    "@types/node": "catalog:",
+    "electron": "^37.6.0",
+    "typescript": "catalog:",
+    "vite": "^7.3.1",
+    "vitest": "catalog:",
+    "wait-on": "^8.0.5"
+  }
+}

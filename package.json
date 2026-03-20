@@ -1,0 +1,50 @@
+{
+	"name": "@tomhhealy/orion",
+	"private": true,
+	"type": "module",
+	"workspaces": {
+		"packages": [
+			"apps/*",
+			"packages/*",
+			"scripts"
+		],
+		"catalog": {
+			"@types/bun": "^1.3.9",
+			"@types/node": "^24.10.13",
+			"tsdown": "^0.20.3",
+			"typescript": "^5.7.3",
+			"vitest": "^4.0.7"
+		}
+	},
+	"scripts": {
+		"dev:web": "turbo run dev --filter=@tomhhealy/web",
+		"dev:marketing": "turbo run dev --filter=@tomhhealy/marketing",
+		"dev:desktop": "turbo run dev --filter=@tomhhealy/desktop --filter=@tomhhealy/web --parallel",
+		"build": "turbo run build",
+		"typecheck": "turbo run typecheck",
+		"test": "turbo run test",
+		"lint": "oxlint --report-unused-disable-directives",
+		"fmt": "oxfmt",
+		"fmt:check": "oxfmt --check"
+	},
+	"devDependencies": {
+		"@types/node": "catalog:",
+		"oxfmt": "^0.40.0",
+		"oxlint": "^1.55.0",
+		"turbo": "^2.3.3",
+		"vitest": "catalog:"
+	},
+	"overrides": {
+		"vite": "^7.3.1"
+	},
+	"engines": {
+		"bun": "^1.3.9",
+		"node": "^24.13.1"
+	},
+	"packageManager": "bun@1.3.9",
+	"msw": {
+		"workerDirectory": [
+			"apps/web/public"
+		]
+	}
+}

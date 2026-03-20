@@ -1,0 +1,39 @@
+{
+	"$schema": "https://turbo.build/schema.json",
+	"globalEnv": [
+		"PORT",
+		"VITE_DEV_SERVER_URL"
+	],
+	"tasks": {
+		"build": {
+			"dependsOn": [
+				"^build"
+			],
+			"outputs": [
+				".output/**",
+				"dist/**",
+				"dist-electron/**",
+				".vite/**",
+				"out/**"
+			]
+		},
+		"dev": {
+			"cache": false,
+			"persistent": true
+		},
+		"typecheck": {
+			"dependsOn": [
+				"^typecheck"
+			],
+			"outputs": [],
+			"cache": false
+		},
+		"test": {
+			"dependsOn": [
+				"^test"
+			],
+			"outputs": [],
+			"cache": false
+		}
+	}
+}
