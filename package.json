@@ -17,6 +17,8 @@
 		}
 	},
 	"scripts": {
+		"dev": "node scripts/dev-runner.mjs dev",
+		"dev:all": "node scripts/dev-runner.mjs dev:all",
 		"dev:convex": "convex dev",
 		"dev:web": "turbo run dev --filter=@tomhhealy/web",
 		"dev:marketing": "turbo run dev --filter=@tomhhealy/marketing",

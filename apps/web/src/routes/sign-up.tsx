@@ -1,26 +1,29 @@
-import { useState } from 'react'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import AuthShell from '../components/AuthShell'
 import { authClient } from '../lib/auth-client'
 import { formatAuthError } from '../lib/auth-errors'
-import { getGuestRedirectPath } from '../lib/auth-routing'
 
-export const Route = createFileRoute('/sign-up')({
-  beforeLoad: ({ context }) => {
-    const redirectPath = getGuestRedirectPath(context.isAuthenticated)
-    if (redirectPath) {
-      throw redirect({ to: redirectPath })
-    }
-  },
-  component: SignUpPage,
-})
+export const Route = createFileRoute('/sign-up')({ component: SignUpPage })
 
 function SignUpPage() {
+  const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const { data: session, isPending } = authClient.useSession()
+
+  useEffect(() => {
+    if (session?.session) {
+      void navigate({ to: '/', replace: true })
+    }
+  }, [navigate, session?.session])
+
+  if (isPending) {
+    return null
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()

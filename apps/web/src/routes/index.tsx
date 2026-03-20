@@ -1,26 +1,53 @@
 import { convexQuery } from '@convex-dev/react-query'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { api } from '@convex/_generated/api'
-import { getProtectedRedirectPath } from '../lib/auth-routing'
+import { authClient } from '../lib/auth-client'
 
-export const Route = createFileRoute('/')({
-  beforeLoad: ({ context }) => {
-    const redirectPath = getProtectedRedirectPath(context.isAuthenticated)
-    if (redirectPath) {
-      throw redirect({ to: redirectPath })
-    }
-  },
-  loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(convexQuery(api.auth.getCurrentUser, {}))
-  },
-  component: App,
-})
+export const Route = createFileRoute('/')({ component: App })
 
 function App() {
-  const { data: currentUser } = useSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
+  const navigate = useNavigate()
+  const { data: session, isPending: isSessionPending } = authClient.useSession()
+  const { data: currentUser } = useQuery({
+    ...convexQuery(api.auth.getCurrentUser, {}),
+    enabled: Boolean(session?.session),
+  })
   const runtimeInfo =
     typeof window === 'undefined' ? undefined : window.desktopBridge?.getRuntimeInfo()
+
+  useEffect(() => {
+    if (!isSessionPending && !session?.session) {
+      void navigate({ to: '/sign-in', replace: true })
+    }
+  }, [isSessionPending, navigate, session?.session])
+
+  if (isSessionPending) {
+    return (
+      <main className="page-wrap px-4 pb-8 pt-14">
+        <section className="island-shell rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
+          <p className="island-kicker mb-3">Loading</p>
+          <p className="m-0 text-base text-[var(--sea-ink-soft)]">
+            Checking your Orion session.
+          </p>
+        </section>
+      </main>
+    )
+  }
+
+  if (!session?.session) {
+    return (
+      <main className="page-wrap px-4 pb-8 pt-14">
+        <section className="island-shell rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
+          <p className="island-kicker mb-3">Redirecting</p>
+          <p className="m-0 text-base text-[var(--sea-ink-soft)]">
+            Sending you to the sign-in screen.
+          </p>
+        </section>
+      </main>
+    )
+  }
 
   return (
     <main className="page-wrap px-4 pb-8 pt-14">

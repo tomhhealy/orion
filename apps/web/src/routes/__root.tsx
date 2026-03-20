@@ -6,23 +6,16 @@ import {
   Outlet,
   Scripts,
   createRootRouteWithContext,
-  useRouteContext,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { createServerFn } from '@tanstack/react-start'
 import Footer from '../components/Footer'
 import Header from '../components/Header'
 import { authClient } from '../lib/auth-client'
-import { getToken } from '../lib/auth-server'
 
 import appCss from '../styles.css?url'
 
 const THEME_INIT_SCRIPT = `(function(){try{var stored=window.localStorage.getItem('theme');var mode=(stored==='light'||stored==='dark'||stored==='auto')?stored:'auto';var prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;var resolved=mode==='auto'?(prefersDark?'dark':'light'):mode;var root=document.documentElement;root.classList.remove('light','dark');root.classList.add(resolved);if(mode==='auto'){root.removeAttribute('data-theme')}else{root.setAttribute('data-theme',mode)}root.style.colorScheme=resolved;}catch(e){}})();`
-
-const getAuth = createServerFn({ method: 'GET' }).handler(async () => {
-  return await getToken()
-})
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -48,29 +41,16 @@ export const Route = createRootRouteWithContext<{
       },
     ],
   }),
-  beforeLoad: async ({ context }) => {
-    const token = await getAuth()
-
-    if (token) {
-      context.convexQueryClient.serverHttpClient?.setAuth(token)
-    }
-
-    return {
-      isAuthenticated: Boolean(token),
-      token,
-    }
-  },
   component: RootComponent,
 })
 
 function RootComponent() {
-  const context = useRouteContext({ from: Route.id })
+  const routerContext = Route.useRouteContext()
 
   return (
     <ConvexBetterAuthProvider
-      client={context.convexQueryClient.convexClient}
+      client={routerContext.convexQueryClient.convexClient}
       authClient={authClient}
-      initialToken={context.token}
     >
       <RootDocument>
         <Outlet />
