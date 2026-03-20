@@ -2,7 +2,14 @@
 	"$schema": "https://turbo.build/schema.json",
 	"globalEnv": [
 		"PORT",
-		"VITE_DEV_SERVER_URL"
+		"VITE_DEV_SERVER_URL",
+		"CONVEX_DEPLOYMENT",
+		"VITE_CONVEX_URL",
+		"VITE_CONVEX_SITE_URL",
+		"VITE_SITE_URL",
+		"SITE_URL",
+		"BETTER_AUTH_SECRET",
+		"CONVEX_DEPLOY_KEY"
 	],
 	"tasks": {
 		"build": {

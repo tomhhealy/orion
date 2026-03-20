@@ -1,13 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "../../convex/**/*.ts", "../../convex/**/*.d.ts"],
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
       "#/*": ["./src/*"],
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@convex/*": ["../../convex/*"]
     },
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "types": ["vite/client"],

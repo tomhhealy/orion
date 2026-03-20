@@ -17,9 +17,11 @@
 		}
 	},
 	"scripts": {
+		"dev:convex": "convex dev",
 		"dev:web": "turbo run dev --filter=@tomhhealy/web",
 		"dev:marketing": "turbo run dev --filter=@tomhhealy/marketing",
 		"dev:desktop": "turbo run dev --filter=@tomhhealy/desktop --filter=@tomhhealy/web --parallel",
+		"codegen:convex": "convex codegen --init",
 		"build": "turbo run build",
 		"typecheck": "turbo run typecheck",
 		"test": "turbo run test",
@@ -46,5 +48,10 @@
 		"workerDirectory": [
 			"apps/web/public"
 		]
+	},
+	"dependencies": {
+		"@convex-dev/better-auth": "^0.11.2",
+		"better-auth": "^1.5.5",
+		"convex": "^1.34.0"
 	}
 }

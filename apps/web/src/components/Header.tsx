@@ -1,7 +1,20 @@
 import { Link } from '@tanstack/react-router'
+import { authClient } from '../lib/auth-client'
 import ThemeToggle from './ThemeToggle'
 
 export default function Header() {
+  const { data: session, isPending } = authClient.useSession()
+
+  async function handleSignOut() {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          window.location.reload()
+        },
+      },
+    })
+  }
+
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--line)] bg-[var(--header-bg)] px-4 backdrop-blur-lg">
       <nav className="page-wrap flex flex-wrap items-center gap-x-3 gap-y-2 py-3 sm:py-4">
@@ -71,6 +84,28 @@ export default function Header() {
           >
             Start Docs
           </a>
+        </div>
+
+        <div className="order-4 ml-auto flex w-full items-center justify-end gap-2 sm:order-3 sm:w-auto">
+          {session?.user ? (
+            <>
+              <span className="hidden text-sm text-[var(--sea-ink-soft)] sm:inline">
+                {session.user.email}
+              </span>
+              <button type="button" className="auth-chip" onClick={handleSignOut}>
+                Sign out
+              </button>
+            </>
+          ) : !isPending ? (
+            <>
+              <Link to="/sign-in" className="auth-chip">
+                Sign in
+              </Link>
+              <Link to="/sign-up" className="auth-chip">
+                Sign up
+              </Link>
+            </>
+          ) : null}
         </div>
       </nav>
     </header>

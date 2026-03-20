@@ -12,7 +12,11 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    extraResource: [path.resolve(__dirname, '../web/dist/client')],
+    extraResource: [
+      path.resolve(__dirname, '../web/dist/client'),
+      path.resolve(__dirname, '../web/dist/server'),
+      path.resolve(__dirname, 'resources/orion-web-server.mjs'),
+    ],
   },
   rebuildConfig: {},
   makers: [

@@ -5,9 +5,9 @@ export default function Footer() {
     <footer className="mt-20 border-t border-[var(--line)] px-4 pb-14 pt-10 text-[var(--sea-ink-soft)]">
       <div className="page-wrap flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
         <p className="m-0 text-sm">
-          &copy; {year} Orion. Authenticated app workspace.
+          &copy; {year} Orion. Protected web and desktop workspace.
         </p>
-        <p className="island-kicker m-0">Shared by web and desktop</p>
+        <p className="island-kicker m-0">Better Auth + Convex enabled</p>
       </div>
       <div className="mt-4 flex justify-center gap-4">
         <a

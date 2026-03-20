@@ -1,8 +1,24 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { convexQuery } from '@convex-dev/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { api } from '@convex/_generated/api'
+import { getProtectedRedirectPath } from '../lib/auth-routing'
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute('/')({
+  beforeLoad: ({ context }) => {
+    const redirectPath = getProtectedRedirectPath(context.isAuthenticated)
+    if (redirectPath) {
+      throw redirect({ to: redirectPath })
+    }
+  },
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(convexQuery(api.auth.getCurrentUser, {}))
+  },
+  component: App,
+})
 
 function App() {
+  const { data: currentUser } = useSuspenseQuery(convexQuery(api.auth.getCurrentUser, {}))
   const runtimeInfo =
     typeof window === 'undefined' ? undefined : window.desktopBridge?.getRuntimeInfo()
 
@@ -11,13 +27,14 @@ function App() {
       <section className="island-shell rise-in relative overflow-hidden rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
         <div className="pointer-events-none absolute -left-20 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(79,184,178,0.32),transparent_66%)]" />
         <div className="pointer-events-none absolute -bottom-20 -right-20 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(47,106,74,0.18),transparent_66%)]" />
-        <p className="island-kicker mb-3">Authenticated App</p>
+        <p className="island-kicker mb-3">Authenticated Dashboard</p>
         <h1 className="display-title mb-5 max-w-3xl text-4xl leading-[1.02] font-bold tracking-tight text-[var(--sea-ink)] sm:text-6xl">
-          Orion web is the shared authenticated experience.
+          Orion web is now gated behind Better Auth.
         </h1>
         <p className="mb-8 max-w-2xl text-base text-[var(--sea-ink-soft)] sm:text-lg">
-          The desktop shell loads this same app in development and production,
-          so feature work can happen here once the domain model is ready.
+          Signed in as <strong>{currentUser?.email ?? 'unknown user'}</strong>. The
+          same protected route tree now backs both the browser build and the
+          Electron shell.
         </p>
         <div className="flex flex-wrap gap-3">
           <a
@@ -41,19 +58,19 @@ function App() {
         {[
           [
             'Shared Renderer',
-            'Desktop and browser users hit the same authenticated route tree.',
+            'Desktop and browser users now share the same authenticated route tree.',
+          ],
+          [
+            'Convex Ready',
+            'Protected user state is sourced from Convex queries during SSR and hydration.',
+          ],
+          [
+            'Better Auth',
+            'Email/password registration and sign-in are now live for Orion users.',
           ],
           [
             'Thin Desktop Shell',
-            'Electron owns only native lifecycle and preload responsibilities.',
-          ],
-          [
-            'Typed Bridge',
-            'Desktop-specific APIs stay behind window.desktopBridge.',
-          ],
-          [
-            'Workspace Ready',
-            'This app now lives cleanly inside the Orion Bun + Turbo monorepo.',
+            'Electron still owns only native lifecycle and preload responsibilities.',
           ],
         ].map(([title, desc], index) => (
           <article
